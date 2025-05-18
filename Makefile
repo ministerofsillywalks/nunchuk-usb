@@ -11,3 +11,4 @@ bin/nunchuck-usb: arduino-serial-lib.o arduino-listen-clicker.o
 
 clean:
 	rm arduino-serial-lib.o arduino-listen-clicker.o
+	mv nunchuck-usb bin/nunchuck-usb
