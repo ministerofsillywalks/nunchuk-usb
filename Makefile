@@ -1,14 +1,18 @@
-all: bin/nunchuck-usb
+SRC=$(wildcard src/*.c)
+OBJS=$(patsubst %.c,%.o, $(SRC))
+LINKEROPTS = -lhidapi-hidraw
 
-arduino-serial-lib.o: src/arduino-serial-lib.c
-	gcc -o arduino-serial-lib.o -c src/arduino-serial-lib.c
+all: nunchuk-usb
 
-arduino-listen-clicker.o: src/arduino-listen-clicker.c
-	gcc -o arduino-listen-clicker.o -c src/arduino-listen-clicker.c
-
-bin/nunchuck-usb: arduino-serial-lib.o arduino-listen-clicker.o
-	gcc -o nunchuck-usb arduino-serial-lib.o arduino-listen-clicker.o
+ 
+#bin/arduino-serial-lib.o: src/arduino-serial-lib.c
+#	gcc -o bin/arduino-serial-lib.o -c src/arduino-serial-lib.c
+#
+#bin/arduino-listen-clicker.o: src/arduino-listen-clicker.c
+#	gcc -o bin/arduino-listen-clicker.o -c src/arduino-listen-clicker.c
+#
+nunchuk-usb: $(OBJS) 
+	gcc -o nunchuk-usb $(OBJS) $(LINKEROPTS)
 
 clean:
-	rm arduino-serial-lib.o arduino-listen-clicker.o
-	mv nunchuck-usb bin/nunchuck-usb
+	rm src/*.o bin/nunchuk-usb

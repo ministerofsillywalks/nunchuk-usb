@@ -60,7 +60,7 @@ int main (int argc, char **argv) {
 	
 	int fd_serial = serialport_init("/dev/ttyUSB0", 9600);
 	if (fd_serial == -1) {
-		printf("Error initializing serial port! Exiting.");
+		printf("Error initializing serial port! Exiting.\n");
 		return 1;
 	}
 
