@@ -1,5 +1,6 @@
 #ifndef NUNCHUK_H
 #define NUNCHUK_H
+#endif
 
 
 #define NCHUK_BUF_SIZE 6
