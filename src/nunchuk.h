@@ -1,3 +1,7 @@
+#ifndef NUNCHUK_H
+#define NUNCHUK_H
+
+
 #define NCHUK_BUF_SIZE 6
 
 struct nchuk_state {

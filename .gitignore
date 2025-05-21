@@ -1,3 +1,4 @@
 bin/*
 arduino-serial-lib.*
 WiiLib.h
+*.o

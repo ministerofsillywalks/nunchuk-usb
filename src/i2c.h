@@ -1,3 +1,6 @@
+#ifndef I2C_H
+#define I2C_H
+
 #include <hidapi/hidapi.h>
 
 #define VID 0x04d8
