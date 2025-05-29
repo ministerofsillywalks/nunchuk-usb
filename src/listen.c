@@ -5,10 +5,11 @@
 #include <linux/uinput.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <hidapi/hidapi.h>
 
-#include "arduino-serial-lib.h"
 #include "nunchuk.h"
 #include "i2c.h"
+
 
 int _break = 0;
 int cmdopts[0];
@@ -34,12 +35,13 @@ void emit(int fd, int type, int code, int val) {
 
 int main (int argc, char **argv) {
 	int res;
-	hid_device *handle = dev_init(10, &res);
-		
-	*cmdopts = getopt(argc, argv, "v");
-	if (*cmdopts == '?') printf("Invalid option, assuming verbose mode off\n");
 	
 	signal(SIGINT, interrupt); 
+	struct nchuk *nchuk = nchuk_init();
+
+	*cmdopts = getopt(argc, argv, "vmcjn");
+	if (*cmdopts == '?') printf("Invalid option, assuming verbose mode off\n");
+	
 	struct uinput_setup usetup;
 	int fd_dev = open("/dev/uinput", O_WRONLY | O_NONBLOCK);
 	if (fd_dev == -1) {
@@ -50,6 +52,12 @@ int main (int argc, char **argv) {
 	ioctl(fd_dev, UI_SET_EVBIT, EV_KEY);
 	ioctl(fd_dev, UI_SET_KEYBIT, KEY_LEFT);
 	ioctl(fd_dev, UI_SET_KEYBIT, KEY_RIGHT);
+	ioctl(fd_dev, UI_SET_KEYBIT, KEY_UP);
+	ioctl(fd_dev, UI_SET_KEYBIT, KEY_DOWN);
+
+	ioctl(fd_dev, UI_SET_KEYBIT, KEY_Z);
+	ioctl(fd_dev, UI_SET_KEYBIT, KEY_X);
+	ioctl(fd_dev, UI_SET_KEYBIT, KEY_C);
 
 	memset(&usetup, 0, sizeof(usetup));
 	usetup.id.bustype = BUS_USB;
@@ -60,38 +68,73 @@ int main (int argc, char **argv) {
 	ioctl(fd_dev, UI_DEV_SETUP, &usetup);
 	ioctl(fd_dev, UI_DEV_CREATE);
 
-	char buf[100];	
-	
-	int fd_serial = serialport_init("/dev/ttyUSB0", 9600);
-	if (fd_serial == -1) {
-		printf("Error initializing serial port! Exiting.\n");
-		return 1;
-	}
-
-	printf("Serial Port open on /dev/ttyUSB0\n");
-	serialport_flush(fd_serial);
-	
 	while (!_break) {
-		serialport_read_until(fd_serial, buf, '1', 100, 150);
-		if (strcmp("51",buf)==0) {
-			printf("Left Key");
+		nchuk_update(nchuk);
+
+		if (nchuk->state.joy_x < 65) {
 			emit(fd_dev, EV_KEY, KEY_LEFT, 1);
 			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
-			emit(fd_dev, EV_KEY, KEY_LEFT, 0);
-			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
-			if (*cmdopts == 'v') printf("%s\n", buf);
-		}
-		else if (strcmp("61",buf)==0) {
-			printf("Right Key");
-			emit(fd_dev, EV_KEY, KEY_RIGHT, 1);
-			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
-			emit(fd_dev, EV_KEY, KEY_RIGHT, 0);
-			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
-			if (*cmdopts == 'v') printf("%s\n", buf);
 		}
 		else {
-			if (*cmdopts == 'v') printf("%s\n", buf);
+			emit(fd_dev, EV_KEY, KEY_LEFT, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}	
+		
+		if (nchuk->state.joy_x > 200) {
+			emit(fd_dev, EV_KEY, KEY_RIGHT, 1);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
 		}
+		else {
+			emit(fd_dev, EV_KEY, KEY_RIGHT, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+		
+		if (nchuk->state.joy_y > 200) {
+		        emit(fd_dev, EV_KEY, KEY_UP, 1);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+		else {
+			emit(fd_dev, EV_KEY, KEY_UP, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}		
+
+		if (nchuk->state.joy_y < 65) {
+		        emit(fd_dev, EV_KEY, KEY_DOWN, 1);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+		else {
+			emit(fd_dev, EV_KEY, KEY_DOWN, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+
+		if (nchuk->state.c_but && !nchuk->state.z_but) {
+		        emit(fd_dev, EV_KEY, KEY_Z, 1);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+		else {
+			emit(fd_dev, EV_KEY, KEY_Z, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+
+		if (nchuk->state.z_but && !nchuk->state.c_but) {
+		        emit(fd_dev, EV_KEY, KEY_X, 1);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+		else {
+			emit(fd_dev, EV_KEY, KEY_X, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+
+		if (nchuk->state.z_but == 1 && nchuk->state.c_but == 1) {
+		        emit(fd_dev, EV_KEY, KEY_C, 1);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+		else {
+			emit(fd_dev, EV_KEY, KEY_C, 0);
+			emit(fd_dev, EV_SYN, SYN_REPORT, 0);
+		}
+
+
 	}
 	
 	printf("Loop broken! Destroying device and exiting\n");

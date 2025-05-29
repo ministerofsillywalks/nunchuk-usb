@@ -1,20 +1,27 @@
 #ifndef NUNCHUK_H
 #define NUNCHUK_H
-#endif
 
+#include "i2c.h"
 
 #define NCHUK_BUF_SIZE 6
 
 struct nchuk_state {
-	char jstick_x;
-	char jstick_y;
-	char accel_x;
-	char accel_y;
-	char accel_z;
+	unsigned char joy_x;
+	unsigned char joy_y;
+	unsigned short accel_x:10;
+	unsigned short accel_y:10;
+	unsigned short accel_z:10;
 	bool c_but;
 	bool z_but;
 };
 
-int nchuk_init();
-int nchuk_update(struct nchuk_state *state);
-	
+struct nchuk {
+	hid_device *dev;
+	struct nchuk_state state;
+};
+
+struct nchuk *nchuk_init(void);
+int nchuk_update(struct nchuk *nchuk);
+int nchuk_destroy(struct nchuk *nchuk);
+
+#endif
