@@ -1,0 +1,1 @@
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="04d8", ATTRS{idProduct}=="00dd", MODE="0660", TAG+="uaccess", TAG+="systemd", ENV{SYSTEMD_USER_WANTS}="mcpnunchuk.service"

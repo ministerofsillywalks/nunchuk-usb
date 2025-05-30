@@ -1,0 +1,7 @@
+[Unit]
+Description=Initialize a nunchuk as input device
+StopWhenUnneeded=true
+
+[Service]
+Type=simple
+ExecStart=/home/cassie/.local/bin/nunchuk-usb
