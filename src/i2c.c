@@ -161,7 +161,7 @@ int i2c_read(unsigned short req_len, unsigned char addr, unsigned char *buf, hid
 	}
 	
 	//read from the device
-	hid_read(dev, cmd_buf, 65);
+	res = hid_read(dev, cmd_buf, 65);
 	if (res == -1) {
 	       fprintf(stderr, "Error: no data was read. Error reason: %ls\n", hid_error(dev));
 	       return res;

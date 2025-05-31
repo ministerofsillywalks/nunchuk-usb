@@ -1,6 +1,7 @@
 #ifndef NUNCHUK_H
 #define NUNCHUK_H
 
+#include <stdbool.h>
 #include "i2c.h"
 
 #define NCHUK_BUF_SIZE 6

@@ -35,7 +35,7 @@ void emit(int fd, int type, int code, int val) {
 
 int main (int argc, char **argv) {
 	int res;
-	
+	int failcount = 0;	
 	signal(SIGINT, interrupt); 
 	struct nchuk *nchuk = nchuk_init();
 
@@ -68,8 +68,8 @@ int main (int argc, char **argv) {
 	ioctl(fd_dev, UI_DEV_SETUP, &usetup);
 	ioctl(fd_dev, UI_DEV_CREATE);
 
-	while (!_break) {
-		nchuk_update(nchuk);
+	while (!_break && failcount < 3) {
+		failcount += nchuk_update(nchuk);
 
 		if (nchuk->state.joy_x < 65) {
 			emit(fd_dev, EV_KEY, KEY_LEFT, 1);
@@ -136,8 +136,8 @@ int main (int argc, char **argv) {
 
 
 	}
-	
-	printf("Loop broken! Destroying device and exiting\n");
+	if (failcount >= 3) printf("HID operations failed 3 times. Exiting.\n");	
+	else printf("Loop broken! Destroying device and exiting\n");
 	ioctl(fd_dev, UI_DEV_DESTROY);
 	close(fd_dev);
 	

@@ -59,10 +59,13 @@ struct nchuk *nchuk_init(void) {
 int nchuk_update(struct nchuk *nchuk) {
 	char req_update[2] = {0x0};
 	char buf[6];
+	int res;
 
-	i2c_write(1, addr, req_update, nchuk->dev);
+	res = i2c_write(1, addr, req_update, nchuk->dev);
+	if(res == -1) return 1;
 	usleep(20000);
-	i2c_read(6, addr, buf, nchuk->dev);
+	res = i2c_read(6, addr, buf, nchuk->dev);
+	if(res == -1) return 1;
 	usleep(20000);
 
 	nchuk->state = _nchuk_analyze(buf);
